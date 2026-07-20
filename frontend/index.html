@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🃏 Baralho das Frações</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div id="app">
+        <h1>🃏 Baralho das Frações</h1>
+
+        <!-- MENU -->
+        <div id="menu">
+            <div class="config-group">
+                <label>Jogadores:</label>
+                <select id="select-jogadores">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4" selected>4</option>
+                </select>
+            </div>
+            <div class="config-group">
+                <label>Tempo (s):</label>
+                <input type="number" id="input-tempo" value="30" min="10" max="120" />
+            </div>
+            <button id="btn-criar" class="btn-primary">Criar Sala</button>
+            <div class="config-group">
+                <input type="text" id="input-sala" placeholder="Código" />
+                <button id="btn-entrar" class="btn-secondary">Entrar</button>
+            </div>
+            <div id="status"></div>
+        </div>
+
+        <!-- JOGO -->
+        <div id="jogo" style="display: none;">
+            <div id="info">
+                <span id="sala-id"></span>
+                <span id="jogadores-info"></span>
+                <span id="turno-info"></span>
+                <span id="vez-comprar-info"></span>
+                <span id="timer-info">⏱️ 30s</span>
+            </div>
+
+            <div id="lateral">
+                <h4>👥 Jogadores</h4>
+                <div id="lista-jogadores"></div>
+            </div>
+
+            <div id="principal">
+                <div id="tabuleiro">
+                    <div class="monte">
+                        <h4>📚 Baralho</h4>
+                        <div id="baralho-info">0 cartas</div>
+                    </div>
+                    <div class="monte">
+                        <h4>🗑️ Descarte</h4>
+                        <div id="descarte-info">0 cartas</div>
+                        <div id="descarte-visual"></div>
+                        <div id="descarte-acao"></div>
+                    </div>
+                </div>
+
+                <div id="area-montagem">
+                    <h4>🧩 Montagem <span id="progresso-montagem">(0/4)</span></h4>
+                    <div id="montagem-slots" class="slots"></div>
+                </div>
+
+                <div id="area-mao">
+                    <h4>🃏 Suas cartas</h4>
+                    <div id="mao-slots" class="slots"></div>
+                </div>
+
+                <div id="controles">
+                    <button id="btn-comprar" class="btn-success">Comprar (monte)</button>
+                    <button id="btn-descartar" class="btn-danger" style="display:none;">Descartar</button>
+                    <button id="btn-passar" class="btn-secondary" style="display:none;">⏭️ Passar</button>
+                </div>
+
+                <div id="mensagem"></div>
+            </div>
+        </div>
+
+        <!-- MODAL NOME -->
+        <div id="modal-nome" class="hidden">
+            <div id="modal-content">
+                <h2>Digite seu nome</h2>
+                <input type="text" id="input-nome" placeholder="Seu nome" maxlength="20" />
+                <button id="btn-confirmar-nome" class="btn-primary">Confirmar</button>
+                <p id="erro-nome" style="color:#ef4444; margin-top:10px;"></p>
+            </div>
+        </div>
+
+        <!-- MODAL VITÓRIA -->
+        <div id="modal-vitoria" class="hidden">
+            <div id="vitoria-content">
+                <h2>🏆 <span id="vitoria-nome"></span> venceu!</h2>
+                <div class="confetes">🎉✨🎊🌟🎈</div>
+                <button id="btn-reiniciar" class="btn-primary">🔄 Nova partida</button>
+            </div>
+        </div>
+
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
