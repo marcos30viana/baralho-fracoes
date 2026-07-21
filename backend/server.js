@@ -6,7 +6,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static('../frontend'));
+app.use(express.static('../'));
 
 // ===== FUNÇÕES PARA GERAR FIGURAS GEOMÉTRICAS =====
 function gerarCirculo(pintadas, partes) {

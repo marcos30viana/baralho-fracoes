@@ -1,5 +1,7 @@
 const socket = io();
 
+console.log('Socket.IO conectado?', socket.connected);
+
 let salaId = null;
 let meuId = null;
 let meuNome = '';
@@ -83,6 +85,19 @@ const modalVitoria = document.getElementById('modal-vitoria');
 const vitoriaNome = document.getElementById('vitoria-nome');
 const btnReiniciar = document.getElementById('btn-reiniciar');
 
+// ===== BOTÃO CRIAR SALA (com depuração) =====
+document.getElementById('btn-criar').addEventListener('click', () => {
+    console.log('Botão Criar Sala clicado!');
+    mostrarModalNome('criar');
+});
+
+document.getElementById('btn-entrar').addEventListener('click', () => {
+    console.log('Botão Entrar clicado!');
+    const codigo = document.getElementById('input-sala').value.trim();
+    if (!codigo) { statusEl.textContent = 'Digite um código de sala!'; return; }
+    mostrarModalNome('entrar');
+});
+
 // ===== MODAL NOME =====
 let acaoAposNome = null;
 
@@ -104,6 +119,7 @@ btnConfirmarNome.addEventListener('click', () => {
     if (acaoAposNome === 'criar') {
         const max = parseInt(selectJogadores.value);
         const tempo = parseInt(inputTempo.value) || 30;
+        console.log('Emitindo criar-sala com:', { maxJogadores: max, nome: meuNome, tempoJogada: tempo });
         socket.emit('criar-sala', { maxJogadores: max, nome: meuNome, tempoJogada: tempo });
     } else if (acaoAposNome === 'entrar') {
         const codigo = document.getElementById('input-sala').value.trim();
@@ -111,16 +127,8 @@ btnConfirmarNome.addEventListener('click', () => {
         socket.emit('entrar-sala', { salaId: codigo, nome: meuNome });
     }
 });
-inputNome.addEventListener('keydown', (e) => { if (e.key === 'Enter') btnConfirmarNome.click(); });
 
-// ===== BOTÕES =====
-document.getElementById('btn-criar').addEventListener('click', () => mostrarModalNome('criar'));
-document.getElementById('btn-entrar').addEventListener('click', () => {
-    const codigo = document.getElementById('input-sala').value.trim();
-    if (!codigo) { statusEl.textContent = 'Digite um código de sala!'; return; }
-    mostrarModalNome('entrar');
-});
-
+// ===== BOTÕES DO JOGO =====
 btnComprar.addEventListener('click', () => {
     if (fase !== 'jogando') return;
     if (jogadores[turno]?.id !== meuId) { mensagemEl.textContent = 'Aguarde sua vez!'; return; }
@@ -156,9 +164,13 @@ btnReiniciar.addEventListener('click', () => {
 });
 
 // ===== EVENTOS SOCKET =====
-socket.on('connect', () => { meuId = socket.id; console.log('Conectado'); });
+socket.on('connect', () => {
+    meuId = socket.id;
+    console.log('Conectado ao servidor com ID:', meuId);
+});
 
 socket.on('sala-criada', (id) => {
+    console.log('Sala criada com ID:', id);
     salaId = id;
     statusEl.textContent = `Sala criada! Código: ${id}`;
     document.getElementById('input-sala').value = id;
@@ -166,6 +178,7 @@ socket.on('sala-criada', (id) => {
 });
 
 socket.on('entrou-sala', (id) => {
+    console.log('Entrou na sala:', id);
     salaId = id;
     statusEl.textContent = `Entrou na sala ${id}`;
     entrarJogo(id);
@@ -192,11 +205,8 @@ socket.on('inicio-jogo', (dados) => {
     tempoRestante = dados.tempoRestante || tempoJogada;
     fase = 'jogando';
     mensagemEl.textContent = 'Jogo iniciado!';
-    
-    // Inicializa as variáveis de controle para sons
     turnoAnterior = turno;
     cartasAnterior = (maos[meuId] || []).length;
-    
     atualizarInfo();
     renderizarMontes();
     renderizarMontagem();
@@ -207,11 +217,8 @@ socket.on('inicio-jogo', (dados) => {
 });
 
 socket.on('estado-jogo', (dados) => {
-    // Guarda o estado anterior para comparar
     const turnoAntes = turno;
     const cartasAntes = (maos[meuId] || []).length;
-
-    // Atualiza os dados
     maos = dados.maos;
     montagens = dados.montagens;
     turno = dados.turno;
@@ -224,28 +231,22 @@ socket.on('estado-jogo', (dados) => {
     fase = dados.fase || 'jogando';
     tempoRestante = dados.tempoRestante || tempoJogada;
 
-    // ===== SONS =====
-    // 1. Som de click quando o turno muda
     if (dados.turno !== turnoAnterior && dados.turno !== undefined) {
         SoundManager.playClick();
         turnoAnterior = dados.turno;
     }
-
-    // 2. Som de carta quando a mão do jogador aumenta
     const minhaMaoAtual = maos[meuId] || [];
     if (minhaMaoAtual.length > cartasAnterior) {
         SoundManager.playCard();
         cartasAnterior = minhaMaoAtual.length;
     }
 
-    // Atualiza a interface
     atualizarInfo();
     renderizarMontes();
     renderizarMontagem();
     renderizarMao();
     renderizarListaJogadores();
     atualizarBotoes();
-    
     if (dados.fase === 'finalizado') {
         mensagemEl.textContent = 'Jogo finalizado!';
         pararTimerLocal();
@@ -261,12 +262,9 @@ socket.on('fim-de-jogo', ({ vencedor, maos: maosFinais, montagens: montagensFina
     fase = 'finalizado';
     const nomeVencedor = vencedor === meuId ? 'Você' : (nomes[vencedor] || 'Jogador ' + (jogadores.findIndex(j => j.id === vencedor) + 1));
     mensagemEl.textContent = `🏆 ${nomeVencedor} venceu!`;
-    
-    // ===== SOM DE VITÓRIA =====
     if (vencedor === meuId) {
         SoundManager.playVictory();
     }
-    
     renderizarMontagem();
     renderizarMao();
     renderizarListaJogadores();
@@ -291,7 +289,6 @@ socket.on('erro', (msg) => {
 });
 
 // ===== FUNÇÕES DE RENDERIZAÇÃO =====
-
 function entrarJogo(id) {
     menuEl.style.display = 'none';
     jogoEl.style.display = 'flex';
