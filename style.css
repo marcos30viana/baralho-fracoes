@@ -308,3 +308,21 @@ button:active { transform: translateY(0); }
     .carta { width: 80px; min-height: 105px; }
     .carta .valor { font-size: 1rem; }
 }
+/* ===== RODAPÉ ===== */
+footer {
+    text-align: center;
+    margin-top: 30px;
+    padding: 15px 0;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+footer .assinatura {
+    font-weight: 700;
+    color: #f1c40f;
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+footer small {
+    color: #94a3b8;
+}
