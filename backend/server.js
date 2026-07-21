@@ -1,10 +1,27 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const cors = require('cors');   // <-- ADICIONE ESTA LINHA
 
 const app = express();
+
+// HABILITA CORS NO EXPRESS
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true
+}));
+
 const server = http.createServer(app);
-const io = new Server(server);
+
+// HABILITA CORS NO SOCKET.IO
+const io = new Server(server, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
+});
 
 app.use(express.static('../'));
 
