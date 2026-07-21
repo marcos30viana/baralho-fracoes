@@ -1,4 +1,4 @@
-const socket = io();
+const socket = io('https://baralho-fracoes-backend.onrender.com');
 
 console.log('Socket.IO conectado?', socket.connected);
 
