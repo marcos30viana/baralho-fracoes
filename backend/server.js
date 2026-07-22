@@ -473,6 +473,7 @@ io.on('connection', (socket) => {
     if (!sala) return;
     const nome = sala.nomes[socket.id] || 'Jogador';
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    console.log(`[CHAT] ${nome} na sala ${salaId}: ${texto}`);
     io.to(salaId).emit('chat-mensagem', { nome, texto, hora });
     });
 
