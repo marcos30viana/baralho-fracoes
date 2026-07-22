@@ -469,11 +469,13 @@ io.on('connection', (socket) => {
         }
     });
     socket.on('chat-mensagem', ({ salaId, texto }) => {
+    console.log('[BACKEND] Mensagem recebida de', socket.id, 'na sala', salaId, ':', texto);    
     const sala = salas[salaId];
     if (!sala) return;
     const nome = sala.nomes[socket.id] || 'Jogador';
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     console.log(`[CHAT] ${nome} na sala ${salaId}: ${texto}`);
+     console.log('[BACKEND] Reenviando para sala', salaId, ':', nome, texto);
     io.to(salaId).emit('chat-mensagem', { nome, texto, hora });
     });
 
