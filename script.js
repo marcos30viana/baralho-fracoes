@@ -35,15 +35,9 @@ const SoundManager = {
         };
         Object.values(this.sounds).forEach(audio => audio.load());
     },
-    playClick() {
-        this._play('click');
-    },
-    playCard() {
-        this._play('card');
-    },
-    playVictory() {
-        this._play('fanfare');
-    },
+    playClick() { this._play('click'); },
+    playCard() { this._play('card'); },
+    playVictory() { this._play('fanfare'); },
     _play(key) {
         const audio = this.sounds[key];
         if (audio) {
@@ -100,17 +94,64 @@ function fecharRegras() {
 btnRegras.addEventListener('click', abrirRegras);
 btnFecharRegras.addEventListener('click', fecharRegras);
 
-// Fechar ao clicar fora do modal
 modalRegras.addEventListener('click', (e) => {
     if (e.target === modalRegras) fecharRegras();
 });
 
-// Fechar com ESC
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !modalRegras.classList.contains('hidden')) fecharRegras();
 });
 
-// ===== BOTÃO CRIAR SALA (com depuração) =====
+// ===== CHAT (definido ANTES de ser usado) =====
+const chatContainer = document.getElementById('chat-container');
+const chatMessages = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const btnEnviarChat = document.getElementById('btn-enviar-chat');
+const btnToggleChat = document.getElementById('btn-toggle-chat');
+
+// Função para adicionar mensagem no chat (definida antes de ser chamada)
+function adicionarMensagemChat(nome, texto, tipo = 'normal', hora = null) {
+    const div = document.createElement('div');
+    div.className = `msg ${tipo === 'sistema' ? 'sistema' : ''}`;
+    if (tipo === 'sistema') {
+        div.textContent = texto;
+    } else {
+        const time = hora || new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        div.innerHTML = `<span class="nome">${nome}</span>${texto}<span class="hora">${time}</span>`;
+    }
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    if (chatMessages.children.length > 100) {
+        chatMessages.removeChild(chatMessages.firstChild);
+    }
+}
+
+// Minimizar/expandir chat
+btnToggleChat.addEventListener('click', () => {
+    chatContainer.classList.toggle('minimizado');
+    btnToggleChat.textContent = chatContainer.classList.contains('minimizado') ? '+' : '−';
+});
+
+// Enviar mensagem
+function enviarMensagemChat() {
+    const texto = chatInput.value.trim();
+    if (!texto) return;
+    if (!salaId) {
+        adicionarMensagemChat('Sistema', 'Você precisa estar em uma sala para enviar mensagens.', 'sistema');
+        chatInput.value = '';
+        return;
+    }
+    socket.emit('chat-mensagem', { salaId, texto });
+    chatInput.value = '';
+    chatInput.focus();
+}
+
+btnEnviarChat.addEventListener('click', enviarMensagemChat);
+chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') enviarMensagemChat();
+});
+
+// ===== BOTÃO CRIAR SALA =====
 document.getElementById('btn-criar').addEventListener('click', () => {
     console.log('Botão Criar Sala clicado!');
     mostrarModalNome('criar');
@@ -209,13 +250,17 @@ socket.on('entrou-sala', (id) => {
     entrarJogo(id);
 });
 
+// JOGADORES (unificado e com chat)
 socket.on('jogadores', (lista) => {
     jogadores = lista;
     atualizarInfo();
     renderizarListaJogadores();
-    // Adiciona mensagem de sistema no chat
-    const nomes = lista.map(j => j.nome || 'Jogador').join(', ');
-    adicionarMensagemChat('Sistema', `Jogadores na sala: ${nomes}`, 'sistema');
+    const nomesLista = lista.map(j => j.nome || 'Jogador').join(', ');
+    adicionarMensagemChat('Sistema', `Jogadores na sala: ${nomesLista}`, 'sistema');
+});
+
+socket.on('chat-mensagem', ({ nome, texto, hora }) => {
+    adicionarMensagemChat(nome, texto, 'normal', hora);
 });
 
 socket.on('inicio-jogo', (dados) => {
@@ -245,8 +290,6 @@ socket.on('inicio-jogo', (dados) => {
 });
 
 socket.on('estado-jogo', (dados) => {
-    const turnoAntes = turno;
-    const cartasAntes = (maos[meuId] || []).length;
     maos = dados.maos;
     montagens = dados.montagens;
     turno = dados.turno;
@@ -316,7 +359,7 @@ socket.on('erro', (msg) => {
     setTimeout(() => statusEl.textContent = '', 3000);
 });
 
-// ===== FUNÇÕES DE RENDERIZAÇÃO =====
+// ===== FUNÇÕES DE RENDERIZAÇÃO (mantidas) =====
 function entrarJogo(id) {
     menuEl.style.display = 'none';
     jogoEl.style.display = 'flex';
@@ -496,58 +539,3 @@ function iniciarTimerLocal() {
 function pararTimerLocal() {
     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
 }
-// ===== CHAT =====
-const chatContainer = document.getElementById('chat-container');
-const chatMessages = document.getElementById('chat-messages');
-const chatInput = document.getElementById('chat-input');
-const btnEnviarChat = document.getElementById('btn-enviar-chat');
-const btnToggleChat = document.getElementById('btn-toggle-chat');
-
-// Minimizar/expandir chat
-btnToggleChat.addEventListener('click', () => {
-    chatContainer.classList.toggle('minimizado');
-    btnToggleChat.textContent = chatContainer.classList.contains('minimizado') ? '+' : '−';
-});
-
-// Enviar mensagem
-function enviarMensagemChat() {
-    const texto = chatInput.value.trim();
-    if (!texto) return;
-    if (!salaId) {
-        adicionarMensagemChat('Sistema', 'Você precisa estar em uma sala para enviar mensagens.', 'sistema');
-        chatInput.value = '';
-        return;
-    }
-    socket.emit('chat-mensagem', { salaId, texto });
-    chatInput.value = '';
-    chatInput.focus();
-}
-
-btnEnviarChat.addEventListener('click', enviarMensagemChat);
-chatInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') enviarMensagemChat();
-});
-
-// Receber mensagem do servidor
-socket.on('chat-mensagem', ({ nome, texto, hora }) => {
-    adicionarMensagemChat(nome, texto, 'normal', hora);
-});
-
-// Adicionar mensagem na interface
-function adicionarMensagemChat(nome, texto, tipo = 'normal', hora = null) {
-    const div = document.createElement('div');
-    div.className = `msg ${tipo === 'sistema' ? 'sistema' : ''}`;
-    if (tipo === 'sistema') {
-        div.textContent = texto;
-    } else {
-        const time = hora || new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        div.innerHTML = `<span class="nome">${nome}</span>${texto}<span class="hora">${time}</span>`;
-    }
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    // Limitar mensagens no chat (evitar sobrecarga)
-    if (chatMessages.children.length > 100) {
-        chatMessages.removeChild(chatMessages.firstChild);
-    }
-}
-
