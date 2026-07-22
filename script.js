@@ -141,6 +141,7 @@ function enviarMensagemChat() {
         chatInput.value = '';
         return;
     }
+    console.log('[FRONTEND] Enviando mensagem:', texto, 'salaId:', salaId);
     socket.emit('chat-mensagem', { salaId, texto });
     chatInput.value = '';
     chatInput.focus();
@@ -260,6 +261,7 @@ socket.on('jogadores', (lista) => {
 });
 
 socket.on('chat-mensagem', ({ nome, texto, hora }) => {
+    console.log('[FRONTEND] Mensagem recebida:', nome, texto);
     adicionarMensagemChat(nome, texto, 'normal', hora);
 });
 
