@@ -39,6 +39,7 @@
                 <button id="btn-entrar" class="btn-secondary">Entrar</button>
             </div>
             <div id="status"></div>
+            <button id="btn-regras" class="btn-secondary">📖 Regras</button>
         </div>
 
         <!-- JOGO -->
@@ -86,6 +87,18 @@
                     <button id="btn-passar" class="btn-secondary" style="display:none;">⏭️ Passar</button>
                 </div>
 
+                <!-- CHAT -->
+                <div id="chat-container">
+                    <div id="chat-header">
+                        <span>💬 Chat da Sala</span>
+                        <button id="btn-toggle-chat" class="btn-secondary" style="padding:2px 10px; font-size:0.8rem;">−</button>
+                    </div>
+                    <div id="chat-messages"></div>
+                    <div id="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Digite sua mensagem..." maxlength="200" />
+                        <button id="btn-enviar-chat" class="btn-primary" style="padding:6px 12px;">Enviar</button>
+                    </div>
+                </div>
                 <div id="mensagem"></div>
             </div>
         </div>
@@ -119,5 +132,36 @@
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="script.js"></script>
+    <!-- MODAL REGRAS -->
+<div id="modal-regras" class="hidden">
+    <div id="modal-regras-content">
+        <h2>📖 Regras do Baralho das Frações</h2>
+        <div class="regras-texto">
+            <p><strong>🎯 Objetivo</strong><br>
+            Ser o primeiro jogador a completar um conjunto de <strong>4 cartas</strong> com o <strong>mesmo valor</strong> (fração, decimal, porcentagem e figura).</p>
+            
+            <p><strong>🃏 Como jogar</strong><br>
+            - Cada jogador recebe <strong>4 cartas</strong>.<br>
+            - Na sua vez, você pode:
+            <br>&nbsp;&nbsp;1️⃣ <strong>Comprar</strong> uma carta do monte (baralho).<br>
+            &nbsp;&nbsp;2️⃣ <strong>Pegar</strong> a carta que o jogador anterior descartou (se estiver disponível).<br>
+            - Após comprar/pegar, você pode:
+            <br>&nbsp;&nbsp;• Dar <strong>duplo clique</strong> em uma carta da mão para movê-la para a <strong>montagem</strong> (se for compatível).<br>
+            &nbsp;&nbsp;• <strong>Selecionar</strong> uma carta e clicar em <strong>"Descartar"</strong> para passá-la ao próximo jogador.</p>
+            
+            <p><strong>🧩 Montagem</strong><br>
+            - A montagem é um espaço onde você organiza suas cartas compatíveis.<br>
+            - Para colocar uma carta, ela deve ter o <strong>mesmo valor decimal</strong> (ex: 0,5) das cartas já na montagem.<br>
+            - Você só pode ter <strong>uma carta de cada tipo</strong> (fração, decimal, porcentagem, figura).</p>
+            
+            <p><strong>🏆 Vitória</strong><br>
+            Complete a montagem com <strong>4 cartas</strong> do mesmo valor e tipos diferentes para <strong>vencer</strong>!</p>
+            
+            <p><strong>⏱️ Tempo</strong><br>
+            Cada jogador tem um <strong>tempo limite</strong> por jogada. Se o tempo acabar, a vez passa automaticamente.</p>
+        </div>
+        <button id="btn-fechar-regras" class="btn-primary">Entendi!</button>
+    </div>
+</div>
 </body>
 </html>

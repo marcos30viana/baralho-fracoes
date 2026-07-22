@@ -468,6 +468,14 @@ io.on('connection', (socket) => {
             }
         }
     });
+    socket.on('chat-mensagem', ({ salaId, texto }) => {
+    const sala = salas[salaId];
+    if (!sala) return;
+    const nome = sala.nomes[socket.id] || 'Jogador';
+    const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    io.to(salaId).emit('chat-mensagem', { nome, texto, hora });
+    });
+
 });
 
 function verificarVitoria(montagem) {

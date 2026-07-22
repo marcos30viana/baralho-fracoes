@@ -85,6 +85,31 @@ const modalVitoria = document.getElementById('modal-vitoria');
 const vitoriaNome = document.getElementById('vitoria-nome');
 const btnReiniciar = document.getElementById('btn-reiniciar');
 
+// ===== MODAL DE REGRAS =====
+const modalRegras = document.getElementById('modal-regras');
+const btnRegras = document.getElementById('btn-regras');
+const btnFecharRegras = document.getElementById('btn-fechar-regras');
+
+function abrirRegras() {
+    modalRegras.classList.remove('hidden');
+}
+function fecharRegras() {
+    modalRegras.classList.add('hidden');
+}
+
+btnRegras.addEventListener('click', abrirRegras);
+btnFecharRegras.addEventListener('click', fecharRegras);
+
+// Fechar ao clicar fora do modal
+modalRegras.addEventListener('click', (e) => {
+    if (e.target === modalRegras) fecharRegras();
+});
+
+// Fechar com ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modalRegras.classList.contains('hidden')) fecharRegras();
+});
+
 // ===== BOTÃO CRIAR SALA (com depuração) =====
 document.getElementById('btn-criar').addEventListener('click', () => {
     console.log('Botão Criar Sala clicado!');
@@ -188,6 +213,9 @@ socket.on('jogadores', (lista) => {
     jogadores = lista;
     atualizarInfo();
     renderizarListaJogadores();
+    // Adiciona mensagem de sistema no chat
+    const nomes = lista.map(j => j.nome || 'Jogador').join(', ');
+    adicionarMensagemChat('Sistema', `Jogadores na sala: ${nomes}`, 'sistema');
 });
 
 socket.on('inicio-jogo', (dados) => {
@@ -468,3 +496,58 @@ function iniciarTimerLocal() {
 function pararTimerLocal() {
     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
 }
+// ===== CHAT =====
+const chatContainer = document.getElementById('chat-container');
+const chatMessages = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const btnEnviarChat = document.getElementById('btn-enviar-chat');
+const btnToggleChat = document.getElementById('btn-toggle-chat');
+
+// Minimizar/expandir chat
+btnToggleChat.addEventListener('click', () => {
+    chatContainer.classList.toggle('minimizado');
+    btnToggleChat.textContent = chatContainer.classList.contains('minimizado') ? '+' : '−';
+});
+
+// Enviar mensagem
+function enviarMensagemChat() {
+    const texto = chatInput.value.trim();
+    if (!texto) return;
+    if (!salaId) {
+        adicionarMensagemChat('Sistema', 'Você precisa estar em uma sala para enviar mensagens.', 'sistema');
+        chatInput.value = '';
+        return;
+    }
+    socket.emit('chat-mensagem', { salaId, texto });
+    chatInput.value = '';
+    chatInput.focus();
+}
+
+btnEnviarChat.addEventListener('click', enviarMensagemChat);
+chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') enviarMensagemChat();
+});
+
+// Receber mensagem do servidor
+socket.on('chat-mensagem', ({ nome, texto, hora }) => {
+    adicionarMensagemChat(nome, texto, 'normal', hora);
+});
+
+// Adicionar mensagem na interface
+function adicionarMensagemChat(nome, texto, tipo = 'normal', hora = null) {
+    const div = document.createElement('div');
+    div.className = `msg ${tipo === 'sistema' ? 'sistema' : ''}`;
+    if (tipo === 'sistema') {
+        div.textContent = texto;
+    } else {
+        const time = hora || new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        div.innerHTML = `<span class="nome">${nome}</span>${texto}<span class="hora">${time}</span>`;
+    }
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    // Limitar mensagens no chat (evitar sobrecarga)
+    if (chatMessages.children.length > 100) {
+        chatMessages.removeChild(chatMessages.firstChild);
+    }
+}
+
